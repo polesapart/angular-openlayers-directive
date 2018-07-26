@@ -390,7 +390,7 @@ angular.module('openlayers-directive').factory('olHelpers', function($q, $log, $
                     return;
                 }
 
-                var _urlBase = 'http://services.arcgisonline.com/ArcGIS/rest/services/';
+                var _urlBase = 'https://services.arcgisonline.com/ArcGIS/rest/services/';
                 var _url = _urlBase + source.layer + '/MapServer/tile/{z}/{y}/{x}';
 
                 oSource = new ol.source.XYZ({
@@ -632,11 +632,12 @@ angular.module('openlayers-directive').factory('olHelpers', function($q, $log, $
                 });
                 break;
             case 'XYZ':
-                if (!source.url && !source.tileUrlFunction) {
-                    $log.error('[AngularJS - Openlayers] - XYZ Layer needs valid url or tileUrlFunction properties');
+                if (!source.url && !source.urls && !source.tileUrlFunction) {
+                    $log.error('[AngularJS - Openlayers] - XYZ Layer needs valid url(s) or tileUrlFunction properties');
                 }
                 oSource = new ol.source.XYZ({
                     url: source.url,
+                    urls: source.urls,
                     attributions: createAttribution(source),
                     minZoom: source.minZoom,
                     maxZoom: source.maxZoom,
@@ -866,11 +867,10 @@ angular.module('openlayers-directive').factory('olHelpers', function($q, $log, $
         setCenter: function(view, projection, newCenter, map) {
 
             if (map && view.getCenter()) {
-                var pan = ol.animation.pan({
+                view.animate({
                     duration: 150,
-                    source: (view.getCenter())
+                    center: view.getCenter()
                 });
-                map.beforeRender(pan);
             }
 
             if (newCenter.projection === projection) {
@@ -882,11 +882,11 @@ angular.module('openlayers-directive').factory('olHelpers', function($q, $log, $
         },
 
         setZoom: function(view, zoom, map) {
-            var z = ol.animation.zoom({
+            view.animate({
                 duration: 150,
-                resolution: map.getView().getResolution()
+                resolution: map.getView().getResolution(),
+                zoom: zoom
             });
-            map.beforeRender(z);
             view.setZoom(zoom);
         },
 
